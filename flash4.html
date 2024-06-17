@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Number Flasher</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            text-align: center;
+        }
+        .box {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+            border: 2px solid #000;
+        }
+        .controls {
+            margin-top: 20px;
+        }
+        .controls label, .controls input {
+            display: block;
+            margin: 5px 0;
+        }
+        .controls .buttons {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="box" id="numberBox">0</div>
+        <div class="controls">
+            <label for="speed">Speed (ms):</label>
+            <input type="number" id="speed" value="500">
+            <label for="count">Count:</label>
+            <input type="number" id="count" value="10">
+            <label for="digits">Digits:</label>
+            <input type="number" id="digits" value="2" min="1">
+            <label for="continuous">Continuous:</label>
+            <input type="checkbox" id="continuous">
+            <label for="repeat">Repeat Same Numbers:</label>
+            <input type="checkbox" id="repeat">
+            <div class="buttons">
+                <button id="startButton">Start</button>
+                <button id="resetButton">Reset</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const numberBox = document.getElementById('numberBox');
+            const startButton = document.getElementById('startButton');
+            const resetButton = document.getElementById('resetButton');
+            const speedInput = document.getElementById('speed');
+            const countInput = document.getElementById('count');
+            const digitsInput = document.getElementById('digits');
+            const continuousCheckbox = document.getElementById('continuous');
+            const repeatCheckbox = document.getElementById('repeat');
+
+            let intervalId;
+            let isFlashing = false;
+            let numbers = [];
+            let currentIndex = 0;
+            let flashedCount = 0;
+
+            startButton.addEventListener('click', () => {
+                if (isFlashing) {
+                    clearInterval(intervalId);
+                    startButton.textContent = 'Start';
+                    isFlashing = false;
+                } else {
+                    startFlashing();
+                    startButton.textContent = 'Stop';
+                    isFlashing = true;
+                }
+            });
+
+            resetButton.addEventListener('click', () => {
+                clearInterval(intervalId);
+                numberBox.textContent = '0';
+                startButton.textContent = 'Start';
+                isFlashing = false;
+                numbers = [];
+                currentIndex = 0;
+                flashedCount = 0;
+            });
+
+            function generateNumbers(count, digits) {
+                numbers = [];
+                const max = Math.pow(10, digits) - 1;
+                const min = Math.pow(10, digits - 1);
+                for (let i = 0; i < count; i++) {
+                    numbers.push(Math.floor(Math.random() * (max - min + 1)) + min);
+                }
+            }
+
+            function startFlashing() {
+                const speed = parseInt(speedInput.value);
+                const count = parseInt(countInput.value);
+                const digits = parseInt(digitsInput.value);
+                const continuous = continuousCheckbox.checked;
+                const repeat = repeatCheckbox.checked;
+
+                if (!repeat || numbers.length === 0) {
+                    generateNumbers(count, digits);
+                }
+
+                currentIndex = 0;
+                flashedCount = 0;
+
+                intervalId = setInterval(() => {
+                    if (!continuous && flashedCount >= count) {
+                        clearInterval(intervalId);
+                        startButton.textContent = 'Start';
+                        isFlashing = false;
+                        return;
+                    }
+
+                    numberBox.textContent = numbers[currentIndex];
+                    currentIndex = (currentIndex + 1) % count;
+
+                    if (!repeat && currentIndex === 0) {
+                        generateNumbers(count, digits);
+                    }
+
+                    flashedCount++;
+                }, speed);
+            }
+        });
+    </script>
+</body>
+</html>
